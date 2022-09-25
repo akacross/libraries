@@ -2,11 +2,10 @@ script_name('Libraries')
 script_author('akacross')
 script_url("https://akacross.net")
 
-local script_version = 0.2
-local script_version_text = '0.2'
+local script_version = 0.1
+local script_version_text = '0.1'
 
-local ssl_res, sampev = pcall(require, 'ssl.https')
-local dlstatus_res, sampev = pcall(require, ('moonloader').download_status)
+local ssl_res, https = pcall(require, 'ssl.https')
 local path = getWorkingDirectory() .. '\\config\\' 
 local cfg = path .. 'libraries.ini'
 local script_path = thisScript().path
@@ -93,9 +92,8 @@ function main()
 	while true do wait(0)
 		if update then
 			lua_thread.create(function() 
-				menu[0] = false
-				wanted.autosave = false
-				os.remove(cfg)
+				--libs.autosave = false
+				--os.remove(cfg)
 				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading the script in 20 seconds", script.this.name), -1)
 				wait(20000) 
 				thisScript():reload()
@@ -154,17 +152,17 @@ function checkLib()
 end
 
 function update_script()
-	if ssl_res and dlstatus_res then
+	if ssl_res then
 		downloadUrlToFile(update_url, getWorkingDirectory()..'/'..string.lower(script.this.name)..'.txt', function(id, status)
-			if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+			if status == 6 then
 				update_text = https.request(update_url)
 				if update_text ~= nil then
 					update_version = update_text:match("version: (.+)")
-					
+					print(update_version)
 					if tonumber(update_version) > script_version then
 						sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} New version found! The update is in progress..", script.this.name), -1)
 						downloadUrlToFile(script_url, script_path, function(id, status)
-							if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+							if status == 6 then
 								sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} The update was successful!", script.this.name), -1)
 								update = true
 							end
