@@ -2,8 +2,8 @@ script_name('Libraries')
 script_author('akacross')
 script_url("https://akacross.net")
 
-local script_version = 0.1
-local script_version_text = '0.1'
+local script_version = 0.2
+local script_version_text = '0.2'
 
 local ssl_res, https = pcall(require, 'ssl.https')
 local path = getWorkingDirectory() .. '\\config\\' 
