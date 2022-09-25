@@ -2,8 +2,8 @@ script_name('Libraries')
 script_author('akacross')
 script_url("https://akacross.net")
 
-local script_version = 0.2
-local script_version_text = '0.2'
+local script_version = 0.3
+local script_version_text = '0.3'
 
 local ssl_res, https = pcall(require, 'ssl.https')
 local path = getWorkingDirectory() .. '\\config\\' 
@@ -102,9 +102,11 @@ function checkLib()
 		for k, v in pairs(files) do
 			if doesFileExist(getWorkingDirectory().."/"..v) then
 				if runonce then
-					sampConnectToServer("127.0.0.1", 7777)
-					sampSetGamestate(0)
-					runonce = false
+					if sampGetGamestate() ~= 3 then
+						sampConnectToServer("127.0.0.1", 7777)
+						sampSetGamestate(0)
+						runonce = false
+					end
 				end
 				os.remove(getWorkingDirectory().."/"..v)
 				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Deleting File: %s", script.this.name, v), -1)
@@ -125,9 +127,11 @@ function checkLib()
 	for k, v in pairs(files) do
 		if not doesFileExist(getWorkingDirectory().."/"..v) then
 			if runonce then
-				sampConnectToServer("127.0.0.1", 7777)
-				sampSetGamestate(0)
-				runonce = false
+				if sampGetGamestate() ~= 3 then
+					sampConnectToServer("127.0.0.1", 7777)
+					sampSetGamestate(0)
+					runonce = false
+				end
 			end
 			downloadUrlToFile("https://raw.githubusercontent.com/akacross/libraries/main/" .. v, getWorkingDirectory().."/"..v)
 			sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Downloading File: %s", script.this.name, v), -1)
@@ -138,8 +142,10 @@ function checkLib()
 	if not libscheck then
 		sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading scripts and reconnecting to the server in 20 seconds", script.this.name), -1)
 		wait(20000)
-		sampSetGamestate(1)
-		sampConnectToServer(ip, port)
+		if sampGetGamestate() ~= 3 then
+			sampSetGamestate(1)
+			sampConnectToServer(ip, port)
+		end
 		reloadScripts()
 	end
 end
