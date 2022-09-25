@@ -89,17 +89,7 @@ function main()
 		update_script()
 	end
 	
-	while true do wait(0)
-		if update then
-			lua_thread.create(function() 
-				--libs.autosave = false
-				--os.remove(cfg)
-				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading the script in 20 seconds", script.this.name), -1)
-				wait(20000) 
-				thisScript():reload()
-			end)
-		end
-	end
+	wait(-1)
 end
 
 function checkLib()
@@ -113,6 +103,7 @@ function checkLib()
 			if doesFileExist(getWorkingDirectory().."/"..v) then
 				if runonce then
 					sampConnectToServer("127.0.0.1", 7777)
+					sampSetGamestate(0)
 					runonce = false
 				end
 				os.remove(getWorkingDirectory().."/"..v)
@@ -135,6 +126,7 @@ function checkLib()
 		if not doesFileExist(getWorkingDirectory().."/"..v) then
 			if runonce then
 				sampConnectToServer("127.0.0.1", 7777)
+				sampSetGamestate(0)
 				runonce = false
 			end
 			downloadUrlToFile("https://raw.githubusercontent.com/akacross/libraries/main/" .. v, getWorkingDirectory().."/"..v)
@@ -146,6 +138,7 @@ function checkLib()
 	if not libscheck then
 		sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading scripts and reconnecting to the server in 20 seconds", script.this.name), -1)
 		wait(20000)
+		sampSetGamestate(1)
 		sampConnectToServer(ip, port)
 		reloadScripts()
 	end
@@ -153,24 +146,23 @@ end
 
 function update_script()
 	if ssl_res then
-		downloadUrlToFile(update_url, getWorkingDirectory()..'/'..string.lower(script.this.name)..'.txt', function(id, status)
-			if status == 6 then
-				update_text = https.request(update_url)
-				if update_text ~= nil then
-					update_version = update_text:match("version: (.+)")
-					print(update_version)
-					if tonumber(update_version) > script_version then
-						sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} New version found! The update is in progress..", script.this.name), -1)
-						downloadUrlToFile(script_url, script_path, function(id, status)
-							if status == 6 then
-								sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} The update was successful!", script.this.name), -1)
-								update = true
-							end
+		update_text = https.request(update_url)
+		if update_text ~= nil then
+			update_version = update_text:match("version: (.+)")
+			if tonumber(update_version) > script_version then
+				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} New version found! The update is in progress..", script.this.name), -1)
+				downloadUrlToFile(script_url, script_path, function(id, status)
+					if status == 6 then
+						sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} The update was successful!", script.this.name), -1)
+						lua_thread.create(function() 
+							sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading the script in 20 seconds", script.this.name), -1)
+							wait(20000) 
+							thisScript():reload()
 						end)
 					end
-				end
+				end)
 			end
-		end)
+		end
 	end
 end
 
