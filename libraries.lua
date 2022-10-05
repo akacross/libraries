@@ -140,7 +140,7 @@ function checkLib()
 		end
 	end
 	if not libscheck then
-		sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading scripts and reconnecting to the server in 20 seconds", script.this.name), -1)
+		sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Reloading scripts%sin 20 seconds", script.this.name, sampGetGamestate() ~= 3 and " reconnecting to the server " or " "), -1)
 		wait(20000)
 		if sampGetGamestate() ~= 3 then
 			sampSetGamestate(1)
