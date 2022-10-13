@@ -222,21 +222,15 @@ function update_script(noupdatecheck, noerrorcheck)
 				update_version = response.text:match("version: (.+)")
 				if update_version ~= nil then
 					if tonumber(update_version) > script_version then
+						local dlstatus = require('moonloader').download_status
 						sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} New version found! The update is in progress..", script.this.name), -1)
-						asyncHttpRequest('GET', script_url, nil,
-							function(response)
-								local f = assert(io.open(script_path, 'w'))
-								f:write(response.text)
-								f:close()
+						downloadUrlToFile(script_url, script_path, function(id, status)
+							if status == dlstatus.STATUS_ENDDOWNLOADDATA then
+								sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Download complete, reloading the script..", script.this.name), -1)
 								wait(500) 
 								thisScript():reload()
-							end,
-							function(err)
-								if noerrorcheck then
-									sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} %s", script.this.name, err), -1)
-								end
 							end
-						)
+						end)
 					else
 						if noupdatecheck then
 							sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} No new version found..", script.this.name), -1)
