@@ -1,45 +1,39 @@
-script_name('Libraries')
-script_author('akacross')
-script_url("https://akacross.net")
+script_name('libraries')
+script_author("akacross")
+script_version("0.4.13")
+script_url("https://akacross.net/")
 
-local script_version = 0.4
-local script_version_text = '0.4'
+-- Paths
+local workingDir = getWorkingDirectory()
+local configDir = workingDir .. '\\config\\'
+local cfgFile = configDir .. 'libraries.json'
 
-local effil_res, effil = pcall(require, 'effil')
-local path = getWorkingDirectory() .. '\\config\\' 
-local cfg = path .. 'libraries.ini'
-local script_path = thisScript().path
-local script_url = "https://raw.githubusercontent.com/akacross/libraries/main/libraries.lua"
-local update_url = "https://raw.githubusercontent.com/akacross/libraries/main/libraries.txt"
-local libs_url = "https://raw.githubusercontent.com/akacross/libraries/main/"
+-- URLs
+local url = "https://raw.githubusercontent.com/akacross/libraries/main/"
 
-local libs = {
-	autosave = true,
-	autoupdate = true,
-	deletelibfiles = false
-}
+local libs = {firstRun = true}
 
 local folders = {
-	"lib", 
-	"lib/windows", 
-	"lib/game", 
-	"lib/samp", 
-	"lib/samp/events", 
-	"lib/mimgui", 
-	"lib/extensions-lite", 
-	"lib/extensions-lite/core", 
-	"lib/ssl", 
-	"lib/socket", 
-	"lib/mime", 
-	"lib/SAMemory", 
-	"lib/SAMemory/game", 
-	"lib/copas", 
-	"lib/cjson",
-	"lib/lub",
-	"lib/md5",
-	"lib/xml",
-	"resource", 
-	"resource/fonts"
+	"\\lib",
+	"\\lib\\windows",
+	"\\lib\\game",
+	"\\lib\\samp",
+	"\\lib\\samp\\events",
+	"\\lib\\mimgui",
+	"\\lib\\extensions-lite",
+	"\\lib\\extensions-lite\\core",
+	"\\lib\\ssl",
+	"\\lib\\socket",
+	"\\lib\\mime",
+	"\\lib\\SAMemory",
+	"\\lib\\SAMemory\\game",
+	"\\lib\\copas",
+	"\\lib\\cjson",
+	"\\lib\\lub",
+	"\\lib\\md5",
+	"\\lib\\xml",
+	"\\resource",
+	"\\resource\\fonts"
 }
 
 local files = {
@@ -84,236 +78,102 @@ local files = {
 	"resource/fonts/fa-solid-900.ttf"
 }
 
-local libscheck = true
-local runonce = true
-local fileExist = true
-local ip = "127.0.0.1"
-local port = 7777
-
 function main()
-	if not doesDirectoryExist(path) then createDirectory(path) end
-	if doesFileExist(cfg) then loadIni() else blankIni() end
-	while not isSampAvailable() do wait(100) end
-	
-	ip, port = sampGetCurrentServerAddress() 
-	
-	checkLib()
-	
-	if effil_res then
-		if libs.autoupdate then
-			update_script(false, false)
-		end
+	createDirectory(configDir)
+	if doesFileExist(cfgFile) then
+		local config, err = loadConfig(cfgFile)
+        if not config then
+            print("Error loading config: " .. err)
+        else
+			libs = config
+        end
 	end
-	
+
+	repeat wait(0) until isSampAvailable()
+
+	checkLib()
 	wait(-1)
 end
 
 function checkLib()
-	if not libs.deletelibfiles then
-		for _, s in pairs(script.list()) do
-			if s ~= script.this then
-				s:unload()
-			end
+	for _, folder in pairs(folders) do createDirectory(workingDir .. folder) end
+
+	local downloads = {}
+	for k, v in pairs(files) do table.insert(downloads, {url = url .. v, path = workingDir .. '\\' .. v, replace = libs.firstRun}) end
+    downloadFiles(downloads, function(result)
+        if result then
+			libs.firstRun = false
+
+			local success, err = saveConfig(cfgFile, libs)
+            if not success then print("Error saving config: " .. err) end
+
+            sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} All files downloaded successfully! Reinitializing all scripts now!", thisScript().name:gsub("^%l", string.upper), string), -1)
+            reloadScripts()
 		end
-		for k, v in pairs(files) do
-			if doesFileExist(getWorkingDirectory().."/"..v) then
-				if runonce then
-					if sampGetGamestate() ~= 3 then
-						sampConnectToServer("127.0.0.1", 7777)
-						sampSetGamestate(0)
-						runonce = false
-					end
-				end
-				os.remove(getWorkingDirectory().."/"..v)
-				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Deleting File: %s", script.this.name, v), -1)
-			end
-		end
-		libs.deletelibfiles = true
-		saveIni()
-	end
-	
-	for k, v in pairs(folders) do 
-		if not doesDirectoryExist(getWorkingDirectory().."/"..v) then 
-			createDirectory(getWorkingDirectory().."/"..v) 
-			sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Creating Folder: %s", script.this.name, v), -1)
-		end 
-	end
-	for k, v in pairs(files) do
-		if not doesFileExist(getWorkingDirectory().."/"..v) then
-			if runonce then
-				for _, s in pairs(script.list()) do
-					if s ~= script.this then
-						s:unload()
-					end
-				end
-				if sampGetGamestate() ~= 3 then
-					sampConnectToServer("127.0.0.1", 7777)
-					sampSetGamestate(0)
-					runonce = false
-				end
-			end
-			downloadUrlToFile(libs_url .. v, getWorkingDirectory().."/"..v, function(id, status)
-				if status == 6 then
-					sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Downloading File: %s", script.this.name, v), -1)
-				end
-			end)
-			libscheck = false
-		end
-	end
-	if not libscheck then
-		for k, v in pairs(files) do
-			while not doesFileExist(getWorkingDirectory().."/"..v) do 
-				wait(100) 
-				fileExist = false
-			end
-		end
-		if not fileExist then
-			sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Loading scripts please wait..", script.this.name), -1)
-			local files = getFilesInPath(getWorkingDirectory(), '*.lua')
-			for _, file in pairs(files) do
-				if file ~= 'libraries.lua' then
-					script.load(file)
-				end
-			end
-				
-			local files2 = getFilesInPath(getWorkingDirectory(), '*.luac')
-			for key, file2 in pairs(files2) do
-				if file2 ~= 'libraries.luac' then
-					script.load(file2)
-				end		
-			end
-						
-			if sampGetGamestate() ~= 3 then
-				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Connecting to the server..", script.this.name), -1)
-			end
-					
-			if sampGetGamestate() ~= 3 then
-				sampSetGamestate(1)
-				sampConnectToServer(ip, port)
-			end
-			wait(5000)
-			if sampGetGamestate() ~= 3 then
-				sampSetGamestate(1)
-				sampConnectToServer(ip, port)
-			end
-			wait(5000)
-			if sampGetGamestate() ~= 3 then
-				sampSetGamestate(1)
-				sampConnectToServer(ip, port)
-			end
-			wait(5000)
-			if sampGetGamestate() ~= 3 then
-				sampSetGamestate(1)
-				sampConnectToServer(ip, port)
-			end
-			wait(5000)
-			if sampGetGamestate() ~= 3 then
-				sampSetGamestate(1)
-				sampConnectToServer(ip, port)
-			end
-		end
-	end
+    end)
 end
 
-function update_script(noupdatecheck, noerrorcheck)
-	asyncHttpRequest('GET', update_url, nil,
-		function(response)
-			if response.text ~= nil then
-				update_version = response.text:match("version: (.+)")
-				if update_version ~= nil then
-					if tonumber(update_version) > script_version then
-						local dlstatus = require('moonloader').download_status
-						sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} New version found! The update is in progress..", script.this.name), -1)
-						downloadUrlToFile(script_url, script_path, function(id, status)
-							if status == dlstatus.STATUS_ENDDOWNLOADDATA then
-								sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} Download complete, reloading the script..", script.this.name), -1)
-								wait(500) 
-								thisScript():reload()
-							end
-						end)
-					else
-						if noupdatecheck then
-							sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} No new version found..", script.this.name), -1)
-						end
-					end
-				end
-			end
-		end,
-		function(err)
-			if noerrorcheck then
-				sampAddChatMessage(string.format("{ABB2B9}[%s]{FFFFFF} %s", script.this.name, err), -1)
-			end
-		end
-	)
+function loadConfig(filePath)
+    local file = io.open(filePath, "r")
+    if not file then
+        return nil, "Could not open file."
+    end
+
+    local content = file:read("*a")
+    file:close()
+
+    if not content or content == "" then
+        return nil, "Config file is empty."
+    end
+
+    local success, decoded = pcall(decodeJson, content)
+    if success then
+        if next(decoded) == nil then
+            return nil, "JSON format is empty."
+        else
+            return decoded, nil
+        end
+    else
+        return nil, "Failed to decode JSON: " .. decoded
+    end
 end
 
-function blankIni()
-	saveIni()
-	loadIni()
+function saveConfig(filePath, config)
+    local file = io.open(filePath, "w")
+    if not file then
+        return false, "Could not save file."
+    end
+    file:write(encodeJson(config, true))
+    file:close()
+    return true
 end
 
-function loadIni()
-	local f = io.open(cfg, "r")
-	if f then
-		libs = decodeJson(f:read("*all"))
-		f:close()
-	end
-end
+function downloadFiles(table, onCompleteCallback)
+    local downloadsInProgress = 0
+    local downloadsStarted = false
+    local callbackCalled = false
 
-function saveIni()
-	if type(libs) == "table" then
-		local f = io.open(cfg, "w")
-		f:close()
-		if f then
-			f = io.open(cfg, "r+")
-			f:write(encodeJson(libs))
-			f:close()
-		end
-	end
-end
+    local function download_handler(id, status, p1, p2)
+        if status == 6 then
+            downloadsInProgress = downloadsInProgress - 1
+        end
 
-function getFilesInPath(path, ftype)
-    local Files, SearchHandle, File = {}, findFirstFile(path.."\\"..ftype)
-    table.insert(Files, File)
-    while File do File = findNextFile(SearchHandle) table.insert(Files, File) end
-    return Files
-end
+        if downloadsInProgress == 0 and onCompleteCallback and not callbackCalled then
+            callbackCalled = true
+            onCompleteCallback(downloadsStarted)
+        end
+    end
 
-function asyncHttpRequest(method, url, args, resolve, reject)
-   local request_thread = effil.thread(function (method, url, args)
-      local requests = require 'requests'
-      local result, response = pcall(requests.request, method, url, args)
-      if result then
-         response.json, response.xml = nil, nil
-         return true, response
-      else
-         return false, response
-      end
-   end)(method, url, args)
-   -- Если запрос без функций обработки ответа и ошибок.
-   if not resolve then resolve = function() end end
-   if not reject then reject = function() end end
-   -- Проверка выполнения потока
-   lua_thread.create(function()
-      local runner = request_thread
-      while true do
-         local status, err = runner:status()
-         if not err then
-            if status == 'completed' then
-               local result, response = runner:get()
-               if result then
-                  resolve(response)
-               else
-                  reject(response)
-               end
-               return
-            elseif status == 'canceled' then
-               return reject(status)
-            end
-         else
-            return reject(err)
-         end
-         wait(0)
-      end
-   end)
+    for _, file in ipairs(table) do
+        if not doesFileExist(file.path) or file.replace then
+            downloadsInProgress = downloadsInProgress + 1
+            downloadsStarted = true
+            downloadUrlToFile(file.url, file.path, download_handler)
+        end
+    end
+
+    if not downloadsStarted and onCompleteCallback and not callbackCalled then
+        callbackCalled = true
+        onCompleteCallback(downloadsStarted)
+    end
 end
