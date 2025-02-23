@@ -1,5 +1,5 @@
 local Colors = {}
-Colors._VERSION = '0.1.0'
+Colors._VERSION = '0.1.1'
 Colors.__index = Colors
 
 local function round(value)

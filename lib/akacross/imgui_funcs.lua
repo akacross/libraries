@@ -1,5 +1,5 @@
 local imgui_funcs = {}
-imgui_funcs._VERSION = '0.1.0'
+imgui_funcs._VERSION = '0.1.1'
 imgui_funcs.__index = imgui_funcs
 
 local tempOffset = {x = 0, y = 0}
@@ -46,7 +46,7 @@ function imgui_funcs.handleWindowDragging(menuId, pos, size, pivot, dragging)
 end
 
 function imgui_funcs.calcTextSize(text)
-    local processedText = removeHexBrackets(text)
+    local processedText = text:gsub("{%x+}", "")
     return imgui.CalcTextSize(processedText)
 end
 
