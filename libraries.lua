@@ -49,7 +49,7 @@ local files = {
 	"lib/windows/init.lua", "lib/windows/message.lua",
 	"lib/game/globals.lua", "lib/game/keys.lua", "lib/game/models.lua", "lib/game/weapons.lua",
 	"lib/samp/events.lua", "lib/samp/raknet.lua", "lib/samp/synchronization.lua", "lib/samp/events/bitstream_io.lua", "lib/samp/events/core.lua", "lib/samp/events/extra_types.lua", "lib/samp/events/handlers.lua", "lib/samp/events/utils.lua", 
-	"lib/mimgui/cdefs.lua", "lib/mimgui/cimguidx9.dll", "lib/mimgui/dx9.lua", "lib/mimgui/imgui.lua", "lib/mimgui/init.lua", "lib/mimgui_addons.lua", "lib/mimgui_piemenu.lua",
+	"lib/mimgui/cdefs.lua", "lib/mimgui/cimguidx9.dll", "lib/mimgui/dx9.lua", "lib/mimgui/win32.lua", "lib/mimgui/imgui.lua", "lib/mimgui/init.lua", "lib/mimgui_addons.lua", "lib/mimgui_piemenu.lua",
 	"lib/extensions-lite/bit.lua", "lib/extensions-lite/init.lua", "lib/extensions-lite/string.lua", "lib/extensions-lite/table.lua", "lib/extensions-lite/core/util.lua",
 	"lib/imgui.lua", "lib/MoonImGui.dll", "lib/imgui_addons.lua", "lib/imgui_piemenu.lua",
 	"lib/fa-icons.lua", "lib/fAwesome5.lua", "lib/tabler_icons.lua", "lib/fAwesome6.lua",
