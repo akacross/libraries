@@ -1,5 +1,5 @@
 local Colors = {}
-Colors._VERSION = '0.1.1'
+Colors._VERSION = '0.1.2'
 Colors.__index = Colors
 
 local function round(value)
@@ -74,6 +74,7 @@ local clr = {
     GOV = 0xBEBEBE, -- #BEBEBE
     SASD = 0xCC9933, -- #CC9933
     LIGHTGREY = 0xB4B4B4, -- #B4B4B4
+    LIGHTGREY2 = 0xBBBBBB -- #BBBBBB
 }
 
 for name, color in pairs(clr) do
