@@ -1,5 +1,5 @@
 local imgui_funcs = {}
-imgui_funcs._VERSION = '0.1.1'
+imgui_funcs._VERSION = '0.1.2'
 imgui_funcs.__index = imgui_funcs
 
 local tempOffset = {x = 0, y = 0}
@@ -14,7 +14,6 @@ function imgui_funcs.handleWindowDragging(menuId, pos, size, pivot, dragging)
     local offset = {x = size.x * pivot.x, y = size.y * pivot.y}
     local boxPos = {x = pos.x - offset.x, y = pos.y - offset.y}
 
-    -- Get screen resolution
     local screenWidth, screenHeight = imgui.GetIO().DisplaySize.x, imgui.GetIO().DisplaySize.y
 
     if mpos.x >= boxPos.x and mpos.x <= boxPos.x + size.x and mpos.y >= boxPos.y and mpos.y <= boxPos.y + size.y then
@@ -28,17 +27,14 @@ function imgui_funcs.handleWindowDragging(menuId, pos, size, pivot, dragging)
         if imgui.IsMouseReleased(0) then
             currentlyDragging = nil
         else
-            if imgui.IsAnyItemHovered() then
-                currentlyDragging = nil
-            else
-                local newBoxPos = {x = mpos.x - tempOffset.x, y = mpos.y - tempOffset.y}
+            local newBoxPos = {x = mpos.x - tempOffset.x, y = mpos.y - tempOffset.y}
 
-                -- Clamp the new position within the screen bounds
-                newBoxPos.x = math.max(0, math.min(newBoxPos.x, screenWidth - size.x))
-                newBoxPos.y = math.max(0, math.min(newBoxPos.y, screenHeight - size.y))
+            local style = imgui.GetStyle()
+            local borderSize = style.WindowBorderSize
+            newBoxPos.x = math.max(borderSize, math.min(newBoxPos.x, screenWidth - size.x - borderSize / 2 + 1))
+            newBoxPos.y = math.max(borderSize, math.min(newBoxPos.y, screenHeight - size.y - borderSize / 2 + 1))
 
-                return {x = newBoxPos.x + offset.x, y = newBoxPos.y + offset.y}, true
-            end
+            return {x = newBoxPos.x + offset.x, y = newBoxPos.y + offset.y}, true
         end
     end
 
