@@ -1,5 +1,5 @@
 local imgui_funcs = {}
-imgui_funcs._VERSION = '0.1.2'
+imgui_funcs._VERSION = '0.1.3'
 imgui_funcs.__index = imgui_funcs
 
 local tempOffset = {x = 0, y = 0}
@@ -39,6 +39,10 @@ function imgui_funcs.handleWindowDragging(menuId, pos, size, pivot, dragging)
     end
 
     return {x = pos.x, y = pos.y}, false
+end
+
+function imgui_funcs.resetCurrentWindowDragging()
+    currentlyDragging = nil
 end
 
 function imgui_funcs.calcTextSize(text)
